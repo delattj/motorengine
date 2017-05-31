@@ -103,9 +103,11 @@ class BaseDocument(object):
             value = self.get_field_value(name)
 
             if field.required and field.is_empty(value):
-                raise InvalidDocumentError("Field '%s' is required." % name)
+                raise InvalidDocumentError("%s field '%s' is required." %\
+                                                (self.__class__.__name__, name))
             if not field.validate(value):
-                raise InvalidDocumentError("Field '%s' must be valid." % name)
+                raise InvalidDocumentError("%s field '%s' must be valid." %\
+                                                (self.__class__.__name__, name))
 
         return True
 
