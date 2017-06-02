@@ -860,3 +860,32 @@ class QuerySet(object):
 
         if not fields_with_index:
             callback(0)
+
+    def handle_create_index(self, callback):
+        def handle(*arguments, **kwargs):
+            if arguments and len(arguments) > 1 and arguments[1]:
+                raise arguments[1]
+            callback(arguments[0])
+
+        return handle
+
+    @return_future
+    def create_index(self, keys, callback=None, alias=None, **options):
+        self.coll(alias).create_index(
+            keys, callback=self.handle_create_index(callback),
+            **options
+        )
+
+    def handle_list_indexes(self, callback):
+        def handle(*arguments, **kwargs):
+            if arguments and len(arguments) > 1 and arguments[1]:
+                raise arguments[1]
+            callback(arguments[0])
+
+        return handle
+
+    @return_future
+    def list_indexes(self, callback=None, alias=None):
+        self.coll(alias).list_indexes(
+            callback=self.handle_list_indexes(callback)
+        )
