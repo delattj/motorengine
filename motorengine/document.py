@@ -98,6 +98,17 @@ class BaseDocument(object):
 
         return data
 
+    def to_json(self):
+        data = dict()
+
+        for name, field in self._fields.items():
+            value = self.get_field_value(name)
+            if field.sparse and field.is_empty(value):
+                continue
+            data[field.db_field] = field.to_json(value)
+
+        return data
+
     def validate(self):
         return self.validate_fields()
 

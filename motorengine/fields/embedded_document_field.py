@@ -72,6 +72,15 @@ class EmbeddedDocumentField(BaseField):
 
         return value.to_son()
 
+    def to_json(self, value):
+        if value is None:
+            return None
+
+        if not isinstance(value, self.embedded_type):
+            value = self.embedded_type(**value)
+
+        return value.to_json()
+
     def from_son(self, value):
         if value is None:
             return None

@@ -58,6 +58,12 @@ class DecimalField(BaseField):
         value = decimal.Decimal(value)
         return six.u(str(value.quantize(self.precision, rounding=self.rounding)))
 
+    def to_json(self, value):
+        if value is not None and isinstance(value, decimal.Decimal):
+            return str(value)
+        
+        return value
+
     def from_son(self, value):
         value = decimal.Decimal(value)
 

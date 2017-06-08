@@ -45,6 +45,9 @@ class BaseField(object):
 
     def to_son(self, value):
         return value
+    
+    def to_json(self, value):
+        return self.to_son(value)
 
     def to_query(self, value):
         return self.to_son(value)

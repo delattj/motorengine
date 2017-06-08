@@ -46,6 +46,12 @@ class DateTimeField(BaseField):
 
         return value
 
+    def to_json(self, value):
+        if value is not None and not isinstance(value, six.string_types):
+            return str(value)
+
+        return value
+
     def from_son(self, value):
         if value is None or isinstance(value, datetime):
             return value

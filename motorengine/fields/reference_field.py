@@ -66,7 +66,25 @@ class ReferenceField(BaseField):
         if isinstance(value, ObjectId):
             return value
 
+        if isinstance(value, six.string_types):
+            return ObjectId(value)
+
         return value._id
 
+    def to_json(self, value):
+        if value is None:
+            return None
+
+        if isinstance(value, six.string_types):
+            return value
+
+        if isinstance(value, ObjectId):
+            return str(value)
+
+        return value.object_id
+
     def from_son(self, value):
+        if isinstance(value, six.string_types):
+            return ObjectId(value)
+
         return value

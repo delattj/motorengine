@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import six
+from base64 import b64encode
 
 from motorengine.fields.base_field import BaseField
 
@@ -28,6 +29,12 @@ class BinaryField(BaseField):
     def to_son(self, value):
         if not isinstance(value, (six.binary_type, )):
             return six.b(value)
+
+        return value
+
+    def to_json(self, value):
+        if isinstance(value, (six.binary_type, )):
+            return b64encode(value)
 
         return value
 

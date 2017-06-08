@@ -44,3 +44,9 @@ class UUIDField(BaseField):
             return UUID(value)
 
         return value
+
+    def to_json(self, value):
+        if value is not None and not isinstance(value, six.string_types):
+            return str(value)
+
+        return value

@@ -50,6 +50,9 @@ class ListField(BaseField):
     def to_son(self, value):
         return list(map(self._base_field.to_son, value))
 
+    def to_json(self, value):
+        return list(map(self._base_field.to_json, value))
+
     def to_query(self, value):
         if not isinstance(value, (tuple, set, list)):
             return value
