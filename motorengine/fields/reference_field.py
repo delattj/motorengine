@@ -54,10 +54,13 @@ class ReferenceField(BaseField):
                 )
             )
 
-        if value is not None and not isinstance(value, (self.reference_type, ObjectId)):
+        if value is not None and not isinstance(value, (self.reference_type, ObjectId, six.string_types)):
             return False
 
-        return value is None or isinstance(value, ObjectId) or (hasattr(value, '_id') and value._id is not None)
+        if isinstance(value, six.string_types):
+            ObjectId(value)
+
+        return True
 
     def to_son(self, value):
         if value is None:
