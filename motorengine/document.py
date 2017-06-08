@@ -120,7 +120,17 @@ class BaseDocument(object):
             if field.required and field.is_empty(value):
                 raise InvalidDocumentError("%s field '%s' is required." %\
                                                 (self.__class__.__name__, name))
-            if not field.validate(value):
+            try:
+                is_valid = field.validate(value)
+
+            except Exception as e:
+                raise InvalidDocumentError(
+                    "%s field '%s' is invalid: %s" % (
+                        self.__class__.__name__, name, str(e)
+                    )
+                )
+
+            if not is_valid:
                 raise InvalidDocumentError("%s field '%s' must be valid." %\
                                                 (self.__class__.__name__, name))
 
