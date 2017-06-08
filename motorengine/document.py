@@ -55,6 +55,10 @@ class BaseDocument(object):
     def is_lazy(self):
         return self.__class__.__lazy__
 
+    @property
+    def object_id(self):
+        return None if self._id is None else str(self._id)
+
     def is_list_field(self, field):
         from motorengine.fields.list_field import ListField
         return isinstance(field, ListField) or (isinstance(field, type) and issubclass(field, ListField))
