@@ -889,3 +889,57 @@ class QuerySet(object):
         self.coll(alias).list_indexes(
             callback=self.handle_list_indexes(callback)
         )
+
+    def handle_in_bulk(self, callback, lazy=None):
+        def handle(*arguments, **kwargs):
+            if arguments and len(arguments) > 1 and arguments[1]:
+                raise arguments[1]
+
+            result = {}
+            self.current_count = 0
+            self.result_size = len(arguments[0])
+
+            # if _loaded_fields is not empty then documents are partly loaded
+            is_partly_loaded = bool(self._loaded_fields)
+
+            for doc in arguments[0]:
+                obj = self.__klass__.from_son(
+                    doc,
+                    # set projections for references (if any)
+                    _reference_loaded_fields=self._reference_loaded_fields,
+                    _is_partly_loaded=is_partly_loaded
+                )
+
+                result[obj.object_id] = obj
+
+            if not result:
+                callback(result)
+                return
+
+            for doc in result.values():
+                if (lazy is not None and not lazy) or not doc.is_lazy:
+                    doc.load_references(doc._fields, callback=self.handle_find_all_auto_load_references(callback, result))
+                else:
+                    self.handle_find_all_auto_load_references(callback, result)()
+
+        return handle
+
+    @return_future
+    def in_bulk(self, ids, callback=None, alias=None, lazy=None):
+        '''
+        Gets a list of items of the current queryset collection using their id.
+
+        In order to query a different database, please specify the `alias` of the database to query.
+        '''
+
+        filters = {
+            "_id": {'$in': [ObjectId(i) for i in ids]}
+        }
+
+        cursor = self.coll(alias).find(
+            filters, projection=self._loaded_fields.to_query(self.__klass__),
+        )
+
+        cursor.to_list(
+            callback=self.handle_in_bulk(callback, lazy), length=DEFAULT_LIMIT
+        )
