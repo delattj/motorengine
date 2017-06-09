@@ -50,8 +50,7 @@ MotorEngine is a port of the amazing MongoEngine Mapper. Instead of using pymong
         'pymongo==3.4',
         'tornado',
         'motor==1.1',
-        'six',
-        'easydict'
+        'six'
     ],
     use_2to3=True,
     extras_require={

@@ -7,10 +7,10 @@ import itertools
 
 from pymongo.errors import DuplicateKeyError
 from tornado.concurrent import return_future
-from easydict import EasyDict as edict
 from bson.objectid import ObjectId
 
 from motorengine import ASCENDING
+from motorengine.utils import attrdict
 from motorengine.aggregation.base import Aggregation
 from motorengine.connection import get_connection
 from motorengine.errors import (
@@ -186,7 +186,7 @@ class QuerySet(object):
             if len(arguments) > 1 and arguments[1]:
                 raise arguments[1]
 
-            callback(edict({
+            callback(attrdict({
                 "count": int(arguments[0]['n']),
                 "updated_existing": arguments[0]['updatedExisting']
             }))

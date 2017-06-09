@@ -3,13 +3,14 @@
 
 import six
 from bson import ObjectId
-from easydict import EasyDict as edict
+from types import MethodType
 from tornado.concurrent import return_future
 
 from motorengine import DESCENDING, ASCENDING
 from motorengine.query_builder.transform import update
 from motorengine.query_builder.node import Q, QCombination, QNot
 from motorengine.fields import BaseField
+from motorengine.utils import attrdict
 
 class BaseAggregation(object):
     def __init__(self, field, alias):
@@ -322,8 +323,11 @@ class Aggregation(object):
             return
 
         if isinstance(item['_id'], (dict,)):
-            for id_name, id_value in list(item['_id'].items()):
+            ids = list(item['_id'].items())
+            del item['_id']
+            for id_name, id_value in ids:
                 item[id_name] = id_value
+
 
     def get_instance(self, item):
         return self.queryset.__klass__.from_son(item)
@@ -336,7 +340,7 @@ class Aggregation(object):
             results = []
             for item in arguments[0]:
                 self.fill_ids(item)
-                results.append(edict(item))
+                results.append(attrdict(item))
 
             callback(results)
 
