@@ -36,24 +36,31 @@ class GroupBy(PipelineOperation):
         self.groups = groups
 
     def to_query(self):
-        group_obj = {'$group': {'_id': {}}}
+        group_obj = {'_id': {}}
 
         for group in self.groups:
             if isinstance(group, BaseAggregation):
-                group_obj['$group'].update(group.to_query(self.aggregation))
+                group_obj.update(group.to_query(self.aggregation))
                 continue
 
             if isinstance(group, six.string_types):
-                field_name = group
+                field_name = group.rsplit('.', 1)[-1]
+                expression = group
+
+            elif isinstance(group, (list, tuple)):
+                field_name = group[0]
+                expression = group[1]
+
             else:
                 field_name = self.aggregation.get_field(group).db_field
+                expression = field_name
 
-            if self.first_group_by:
-                group_obj['$group']['_id'][field_name] = "$%s" % field_name
-            else:
-                group_obj['$group']['_id'][field_name] = "$_id.%s" % field_name
+            expression = "$"+ expression if self.first_group_by else\
+                            "$_id."+ expression
 
-        return group_obj
+            group_obj['_id'][field_name] = expression
+
+        return {'$group': group_obj}
 
 
 class Match(PipelineOperation):
