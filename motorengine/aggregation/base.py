@@ -201,9 +201,15 @@ class Push(BaseAggregation):
     def to_query(self, aggregation):
         alias = self.alias
         fields = [aggregation.get_field_name(f) for f in self.field]
+        if len(fields) == 1:
+            push = fields[0]
+            if push[0] != '$': push = "$"+ push
+
+        else:
+            push = dict((f, '$'+f) for f in fields)
 
         return {
-            alias: {"$push": dict((f, '$'+f) for f in fields)}
+            alias: {"$push": push}
         }
 
 
