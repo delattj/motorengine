@@ -375,16 +375,19 @@ class BaseDocument(object):
             fields.append(cls._fields.get(name, dyn_field))
             return fields
 
-        field_values = name.split('.')
+        field_values = name.split('.', 1)
         dyn_field = DynamicField(db_field="_%s" % field_values[0])
         obj = cls._fields.get(field_values[0], dyn_field)
         fields.append(obj)
 
         if isinstance(obj, (EmbeddedDocumentField, )):
-            obj.embedded_type.get_fields(".".join(field_values[1:]), fields=fields)
+            obj.embedded_type.get_fields(field_values[1], fields=fields)
 
-        if isinstance(obj, (ListField, )):
-            obj.item_type.get_fields(".".join(field_values[1:]), fields=fields)
+        elif isinstance(obj, (ListField, )):
+            obj.item_type.get_fields(field_values[1], fields=fields)
+
+        else:
+            fields.extend(field_values[1].split('.'))
 
         return fields
 
