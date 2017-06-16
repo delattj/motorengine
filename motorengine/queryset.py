@@ -701,7 +701,7 @@ class QuerySet(object):
         self._limit = limit
         return self
 
-    def order_by(self, field_name, direction=ASCENDING):
+    def order_by(self, *fields):
         '''
         Specified the order to be used when returning documents in subsequent queries.
 
@@ -709,23 +709,30 @@ class QuerySet(object):
 
             from motorengine import DESCENDING  # or ASCENDING
 
-            User.objects.order_by('first_name', direction=DESCENDING).find_all(callback=handle_all)
+            User.objects.order_by('-first_name').find_all(callback=handle_all)
         '''
 
         from motorengine.fields.base_field import BaseField
         from motorengine.fields.list_field import ListField
 
-        if isinstance(field_name, (ListField, )):
-            raise ValueError("Can't order by a list field. If you meant to order by the size of the list, please use either an Aggregation Pipeline query (look for Document.objects.aggregate) or create an IntField with the size of the list field in your Document.")
+        for field_name in fields:
+            if isinstance(field_name, (ListField, )):
+                raise ValueError("Can't order by a list field. If you meant to order by the size of the list, please use either an Aggregation Pipeline query (look for Document.objects.aggregate) or create an IntField with the size of the list field in your Document.")
 
-        if isinstance(field_name, (BaseField, )):
-            field_name = field_name.name
+            if isinstance(field_name, (BaseField, )):
+                field_name = field_name.name
 
-        if field_name not in self.__klass__._fields:
-            raise ValueError("Invalid order by field '%s': Field not found in '%s'." % (field_name, self.__klass__.__name__))
+            if field_name not in self.__klass__._fields:
+                raise ValueError("Invalid order by field '%s': Field not found in '%s'." % (field_name, self.__klass__.__name__))
 
-        field = self.__klass__._fields[field_name]
-        self._order_fields.append((field.db_field, direction))
+            direction = ASCENDING
+            if field_name[0] == '-':
+                direction = DESCENDING
+                field_name = field_name[1:]
+
+            field_name = self.__klass__._fields[field_name].db_field
+
+            self._order_fields.append((field_name, direction))
         return self
 
     def handle_find_all_auto_load_references(self, callback, results):
