@@ -362,11 +362,9 @@ class Aggregation(object):
             return
 
         if isinstance(item['_id'], (dict,)):
-            ids = list(item['_id'].items())
+            ids = item['_id']
             del item['_id']
-            for id_name, id_value in ids:
-                item[id_name] = id_value
-
+            item.update(ids)
 
     def get_instance(self, item):
         return self.queryset.__klass__.from_son(item)
