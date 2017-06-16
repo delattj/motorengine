@@ -117,6 +117,22 @@ class OrderBy(PipelineOperation):
 
         return {'$sort': sort}
 
+class Limit(PipelineOperation):
+    def __init__(self, aggregation, limit):
+        super(Limit, self).__init__(aggregation)
+        self.limit = limit
+
+    def to_query(self):
+        return {'$limit': self.limit}
+
+class Skip(PipelineOperation):
+    def __init__(self, aggregation, skip):
+        super(Skip, self).__init__(aggregation)
+        self.skip = skip
+
+    def to_query(self):
+        return {'$skip': self.skip}
+
 
 class BaseOp(object):
     def to_query(self, aggregation):
@@ -322,6 +338,23 @@ class Aggregation(object):
 
     def graph_lookup(self, *args, **kwargs):
         self.pipeline.append(GraphLookup(self, *args, **kwargs))
+        return self
+
+    def limit(self, limit):
+        self.pipeline.append(Limit(self, int(limit)))
+        return self
+
+    def skip(self, skip):
+        self.pipeline.append(Skip(self, int(skip)))
+        return self
+
+    def page(self, page, size):
+        skip = (int(page) - 1) * int(size)
+        if skip:
+            self.pipeline.append(Skip(self, skip))
+
+        self.pipeline.append(Limit(self, size))
+
         return self
 
     def fill_ids(self, item):

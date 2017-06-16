@@ -701,6 +701,19 @@ class QuerySet(object):
         self._limit = limit
         return self
 
+    def page(self, page, size):
+        '''
+        Limits the number of documents return in subsequent queries using pagination..
+
+        Usage::
+
+            User.objects.page(2, size=10).find_all(callback=handle_all) # Skip the first 10 documents,
+                                                                        # and return the 10 following.
+        '''
+        skip = (int(page) - 1) * int(size)
+        self._skip = skip
+        self._limit = int(size)
+
     def order_by(self, *fields):
         '''
         Specified the order to be used when returning documents in subsequent queries.
