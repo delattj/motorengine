@@ -39,10 +39,15 @@ class DefaultOperator(QueryOperator):
 def update(d, u):
     for k, v in u.items():
         if isinstance(v, collections.Mapping):
-            r = update(d.get(k, {}), v)
-            d[k] = r
+            t = d.get(k, {})
+            if k in d and not isinstance(t, collections.Mapping):
+                t = {"$eq":t} # Assume equality operator
+
+            d[k] = update(t, v)
+
         else:
             d[k] = u[k]
+
     return d
 
 
@@ -54,26 +59,26 @@ def transform_query(document, **query):
             update(mongo_query, value)
             continue
 
-        if '__' not in key:
-            field = document.get_fields(key)[0]
-            field_name = field.db_field
-            operator = DefaultOperator()
-            field_value = operator.get_value(field, value)
-        else:
+        if '__' in key:
             values = key.split('__')
-            field_reference_name, operator = ".".join(values[:-1]), values[-1]
-            if operator not in OPERATORS:
-                field_reference_name = "%s.%s" % (field_reference_name, operator)
-                operator = ""
+            key, operator = ".".join(values[:-1]), values[-1]
+            if operator in OPERATORS:
+                operator = OPERATORS[operator]()
 
-            fields = document.get_fields(field_reference_name)
+            else:
+                key = "%s.%s" % (key, operator)
+                operator = DefaultOperator()
 
-            field_name = ".".join([
-                hasattr(field, 'db_field') and field.db_field or field
-                for field in fields
-            ])
-            operator = OPERATORS.get(operator, DefaultOperator)()
-            field_value = operator.get_value(fields[-1], value)
+        else:
+            operator = DefaultOperator()
+
+        fields = document.get_fields(key)
+
+        field_name = ".".join([
+            hasattr(field, 'db_field') and field.db_field or field
+            for field in fields
+        ])
+        field_value = operator.get_value(fields[-1], value)
 
         update(mongo_query, operator.to_query(field_name, field_value))
 
