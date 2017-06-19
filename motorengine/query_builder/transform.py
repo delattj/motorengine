@@ -39,16 +39,14 @@ class DefaultOperator(QueryOperator):
 def update(d, u):
     for k, v in u.items():
         if isinstance(v, collections.Mapping):
-            t = d.get(k, {})
-            if k in d and not isinstance(t, collections.Mapping):
-                t = {"$eq":t} # Assume equality operator
+            if k in d:
+                t = d[k]
+                if isinstance(t, collections.Mapping):
+                    update(t, v)
+    
+                continue
 
-            d[k] = update(t, v)
-
-        else:
-            d[k] = u[k]
-
-    return d
+        d[k] = u[k]
 
 
 def transform_query(document, **query):
