@@ -643,6 +643,11 @@ class QuerySet(object):
             else:
                 self._filters = arguments[0]
         else:
+            if 'id' in kwargs:
+                id = kwargs['id']
+                if not isinstance(id, ObjectId):
+                    kwargs['id'] = ObjectId(id)
+                    
             validate_fields(self.__klass__, kwargs)
             if self._filters:
                 self._filters = self._filters & Q(**kwargs)
