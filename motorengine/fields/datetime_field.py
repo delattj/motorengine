@@ -48,7 +48,7 @@ class DateTimeField(BaseField):
 
     def to_json(self, value):
         if value is not None and not isinstance(value, six.string_types):
-            return str(value)
+            return str(value.replace(microsecond=0))
 
         return value
 
@@ -59,4 +59,12 @@ class DateTimeField(BaseField):
         return datetime.strptime(value, FORMAT)
 
     def validate(self, value):
+        if isinstance(value, six.string_types):
+            try:
+                datetime.strptime(value, FORMAT)
+                return True
+
+            except:
+                return False
+
         return value is None or isinstance(value, datetime)
