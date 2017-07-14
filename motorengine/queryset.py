@@ -118,10 +118,6 @@ class QuerySet(object):
             )
 
         if self.validate_document(document):
-            self.ensure_index(callback=self.indexes_saved_before_save(document, callback, alias=alias), alias=alias)
-
-    def indexes_saved_before_save(self, document, callback, alias=None):
-        def handle(*args, **kw):
             self.update_field_on_save_values(document, document._id is not None)
             doc = document.to_son()
 
@@ -129,8 +125,6 @@ class QuerySet(object):
                 self.coll(alias).update({'_id': document._id}, doc, callback=self.handle_update(document, callback))
             else:
                 self.coll(alias).insert(doc, callback=self.handle_save(document, callback))
-
-        return handle
 
     def validate_document(self, document):
         if not isinstance(document, self.__klass__):
@@ -879,8 +873,7 @@ class QuerySet(object):
                     callback,
                     created_indexes,
                     len(fields_with_index)
-                ),
-                alias=alias
+                )
             )
 
         if not fields_with_index:
