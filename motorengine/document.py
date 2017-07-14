@@ -328,16 +328,7 @@ class BaseDocument(object):
 
         if name in self._fields:
             field = self._fields[name]
-            is_reference_field = self.is_reference_field(field)
             value = field.get_value(self._values.get(name, None))
-
-            if is_reference_field and value is not None and not isinstance(value, field.reference_type):
-                message = "The property '%s' can't be accessed before calling 'load_references'" + \
-                    " on its instance first (%s) or setting __lazy__ to False in the %s class."
-
-                raise LoadReferencesRequiredError(
-                    message % (name, self.__class__.__name__, self.__class__.__name__)
-                )
 
             return value
 
