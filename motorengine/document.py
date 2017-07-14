@@ -346,7 +346,7 @@ class BaseDocument(object):
     def __setattr__(self, name, value):
         from motorengine.fields.dynamic_field import DynamicField
 
-        if name not in AUTHORIZED_FIELDS and name not in self._fields:
+        if name[:2] != '__' and name not in AUTHORIZED_FIELDS and name not in self._fields:
             self._fields[name] = DynamicField(db_field="_%s" % name)
 
         if name in self._fields:
