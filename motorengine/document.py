@@ -98,7 +98,7 @@ class BaseDocument(object):
 
         return data
 
-    def to_json(self):
+    def to_json(self, id=False):
         data = dict()
 
         for name, field in self._fields.items():
@@ -106,6 +106,9 @@ class BaseDocument(object):
             if field.sparse and field.is_empty(value):
                 continue
             data[field.db_field] = field.to_json(value)
+
+        if id:
+            data['id'] = self.object_id
 
         return data
 
