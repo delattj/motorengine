@@ -9,7 +9,7 @@ from pymongo.errors import DuplicateKeyError
 from tornado.concurrent import return_future
 from bson.objectid import ObjectId
 
-from motorengine import ASCENDING
+from motorengine import ASCENDING, DESCENDING
 from motorengine.utils import attrdict
 from motorengine.aggregation.base import Aggregation
 from motorengine.connection import get_connection
@@ -712,6 +712,7 @@ class QuerySet(object):
         skip = (int(page) - 1) * int(size)
         self._skip = skip
         self._limit = int(size)
+        return self
 
     def order_by(self, *fields):
         '''
@@ -734,15 +735,20 @@ class QuerySet(object):
             if isinstance(field_name, (BaseField, )):
                 field_name = field_name.name
 
-            if field_name not in self.__klass__._fields:
-                raise ValueError("Invalid order by field '%s': Field not found in '%s'." % (field_name, self.__klass__.__name__))
-
             direction = ASCENDING
             if field_name[0] == '-':
                 direction = DESCENDING
                 field_name = field_name[1:]
 
-            field_name = self.__klass__._fields[field_name].db_field
+            if field_name not in self.__klass__._fields:
+                if field_name == 'id' or field_name == '_id':
+                    field_name = '_id'
+
+                else:
+                    raise ValueError("Invalid order by field '%s': Field not found in '%s'." % (field_name, self.__klass__.__name__))
+
+            else:
+                field_name = self.__klass__._fields[field_name].db_field
 
             self._order_fields.append((field_name, direction))
         return self
