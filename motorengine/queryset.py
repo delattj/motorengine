@@ -744,6 +744,19 @@ class QuerySet(object):
                 if field_name == 'id' or field_name == '_id':
                     field_name = '_id'
 
+                elif '.' in field_name or '__' in field_name:
+                    field_name = field_name.replace('__', '.')
+                    tail = field_name.split('.')
+                    klass = self.__klass__
+                    while tail:
+                        part_field_name, tail = tail[0], tail[1:]
+                        if part_field_name not in klass._fields:
+                            raise ValueError("Invalid order by field '%s': Field not found in '%s'." % (part_field_name, klass.__name__))
+
+                        klass = klass._fields[part_field_name]
+                        if not hasattr(klass, 'embedded_type'):
+                            break
+
                 else:
                     raise ValueError("Invalid order by field '%s': Field not found in '%s'." % (field_name, self.__klass__.__name__))
 
