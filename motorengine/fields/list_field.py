@@ -64,6 +64,10 @@ class ListField(BaseField):
     def from_son(self, value):
         if value is None:
             return list()
+
+        if not isinstance(value, (tuple, set, list)):
+            raise ValueError("SON value must be a list, not '%s'." % type(value))
+
         return list(map(self._base_field.from_son, value))
 
     @property
