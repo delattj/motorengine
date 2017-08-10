@@ -12,6 +12,8 @@ from motorengine.query_builder.node import Q, QCombination, QNot
 from motorengine.fields import BaseField
 from motorengine.utils import attrdict
 
+dict_update = dict.update
+
 class BaseAggregation(object):
     def __init__(self, field, alias):
         self._field = field
@@ -364,7 +366,9 @@ class Aggregation(object):
         if isinstance(item['_id'], (dict,)):
             ids = item['_id']
             del item['_id']
-            item.update(ids)
+            dict_update(item, ids)
+            # was item.update(ids) but avoid a name clash if result has an
+            # attribute named 'update'
 
     def get_instance(self, item):
         return self.queryset.__klass__.from_son(item)
