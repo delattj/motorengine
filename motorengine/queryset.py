@@ -914,7 +914,7 @@ class QuerySet(object):
         def handle(*arguments, **kwargs):
             if arguments and len(arguments) > 1 and arguments[1]:
                 raise arguments[1]
-            callback(arguments[0])
+            callback([s.to_dict() for s in arguments[0]])
 
         return handle
 
@@ -922,6 +922,21 @@ class QuerySet(object):
     def list_indexes(self, callback=None, alias=None):
         self.coll(alias).list_indexes(
             callback=self.handle_list_indexes(callback)
+        )
+
+    def handle_drop_index(self, callback):
+        def handle(*args, **kwargs):
+            if args and len(args) > 1 and args[1]:
+                raise args[1]
+
+            callback(args[0])
+
+        return handle
+
+    @return_future
+    def drop_index(self, key, callback=None, alias=None):
+        self.coll(alias).drop_index(
+            key, callback=self.handle_drop_index(callback)
         )
 
     def handle_in_bulk(self, callback, lazy=None):
