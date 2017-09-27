@@ -992,3 +992,29 @@ class QuerySet(object):
         cursor.to_list(
             callback=self.handle_in_bulk(callback, lazy), length=DEFAULT_LIMIT
         )
+
+    def handle_distinct(self, callback):
+        def handle(*args, **kwargs):
+            if args and len(args) > 1 and args[1]:
+                raise args[1]
+
+            callback(args[0])
+
+        return handle
+
+    @return_future
+    def distinct(self, key, filter=None, callback=None, alias=None, **kwargs):
+        from motorengine.query_builder.node import Q, QNode
+
+        if filter is not None and not isinstance(filter, QNode):
+            filter = Q(**filter)
+
+        if self._filters:
+            filter = self._filters if filter is None else self._filters & filter
+
+        if filter is not None:
+            filter = self.get_query_from_filters(filter)
+
+        self.coll(alias).distinct(
+            key, filter, callback=self.handle_distinct(callback), **kwargs
+        )
