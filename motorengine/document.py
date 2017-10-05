@@ -29,6 +29,7 @@ class BaseDocument(object):
         self._id = kw.pop('_id', None)
         self._values = {}
         self.is_partly_loaded = _is_partly_loaded
+        object.__setattr__(self, '_fields', self._fields.copy())
 
         if _reference_loaded_fields:
             self._reference_loaded_fields = _reference_loaded_fields
