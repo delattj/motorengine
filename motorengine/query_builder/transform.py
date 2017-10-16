@@ -57,6 +57,10 @@ def transform_query(document, **query):
             update(mongo_query, value)
             continue
 
+        if key[0] == '$':
+            mongo_query[key] = value
+            continue
+
         if '__' in key:
             values = key.split('__')
             key, operator = ".".join(values[:-1]), values[-1]
